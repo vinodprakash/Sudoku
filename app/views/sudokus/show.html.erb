@@ -1,0 +1,193 @@
+<script>
+    var table;
+    function init(){
+        //alert('<%= @sudoku.puzzle %>');
+        table = $$("table#sudoku input");
+        loadSample();
+    }
+    function loadSample(){
+        var sample = <%= @sudoku.puzzle %>;
+        var i =0;
+        $$("table#sudoku input").each(function (ele){
+            if(sample[i]){
+                ele.value = sample[i];
+                ele.readOnly = true;
+                ele.setStyle({
+                    backgroundColor:'#EEEEEE'
+                });
+            }else{
+                ele.value = '';
+            }
+            i++;
+        });
+    }
+    function getRow(ele){
+        var r = new Array();
+        var row = parseInt(ele.id) % 9;
+        for(var i = 0; i<= 8; i++){
+            r[i] = table[row];
+            row+=9;
+        }
+        return r;
+    }
+
+    function getBox(ele){
+        var r = new Array();
+        var row = parseInt(ele.id) % 9;
+        var col = ~~(parseInt(ele.id) / 9); //~~ is Rounding
+        var start = ele.id - (col %3)*9 - row%3;
+        for(var i = 0; i<=8 ; i++, start++){
+            r[i] = table[start];
+            if(start % 3 == 2){
+                start -= 3;
+                start += 9;
+            }
+        }
+        return r;
+    }
+
+    function getCol(ele){
+        var r = new Array();
+        var col = ~~(parseInt(ele.id) / 9) * 9; //~~ is Rounding
+        for(var i = 0; i<= 8; i++){
+            r[i] = table[col++];
+        }
+        return r;
+    }
+
+
+    function getElement(row,col){
+        var r = (col+1)*9+row;
+        //if(r < 0 || r > 80)
+        //	console.log("Bad getElement request. " + row +":"+col);
+        return table[(col)*9+row];
+    }
+    function validatePuzzle(){
+        alert(validate());
+    }
+    function validate(){
+        for(var i=10; i<=64 ; i+=27){
+            for(var j=i; j<=i+8 ; j+=3){
+                if(!bucketTest(getBox(table[j]))){
+                    return false;
+                }
+            }
+        }
+        //Validate rows
+        for(var i = 0; i<=8; i++){
+            if(!bucketTest(getRow(table[i]))){
+                return false;
+            }
+        }
+        //Validate cols
+        for(var i = 0; i<=72; i+=9){
+            if(!bucketTest(getCol(table[i]))){
+                return false;
+            }
+        }
+        return true;
+    }
+    function bucketTest(ele){
+        var bucket = new Array();
+        for(var i = 0; i<=8; i++) bucket[i] = 0;
+        for(var i = 0; i<=8; i++){
+            if(ele[i].value < 0 || ele[i].value > 9){
+                return false;
+            }
+            bucket[ele[i].value-1]++;
+            if(bucket[ele[i].value-1] > 1)
+                return false;
+        }
+        return true;
+    }
+    function logicSolve(){
+        bruteForce(0);
+    }
+    function count(){
+        if(!validate()){
+            alert(-1);
+        }else{
+            numberSolutions = 0;
+            countSolutions(0);
+            alert(numberSolutions);
+        }
+    }
+    var numberSolutions = 0;
+    function countSolutions(cnt) {
+        while(table[cnt] && table[cnt].value && cnt!=81){//lets try to not have a recursive depth of 81
+            cnt++;
+        }
+        if(cnt == 81){
+            numberSolutions++;
+            return;
+        }
+        for (var val = 1; val <= 9; val++) {
+            if (legal(table[cnt], val) == true) {
+                table[cnt].value = val;
+                countSolutions(cnt+1);//recurse
+            }
+        }
+        table[cnt].value = '';
+        return;
+    }
+    function bruteForce(cnt) {
+        while(table[cnt] && table[cnt].value && cnt!=81){//lets try to not have a recursive depth of 81
+            cnt++;
+        }
+        if(cnt == 81){
+            return true;
+        }
+        for (var val = 1; val <= 9; val++) {
+            if (legal(table[cnt], val) == true) {
+                table[cnt].value = val;
+                if (bruteForce(cnt+1) == true ){
+                    return true;
+                }
+            }
+        }
+        table[cnt].value = '';
+        return false;
+    }
+    function legal(ele, val) {
+        var r = getRow(ele);
+        var c = getCol(ele);
+        var b = getBox(ele);
+        for(var bc = 0; bc< 9; bc++){
+            if(r[bc].value == val || c[bc].value == val || b[bc].value == val)
+                return false;
+        }
+        return true;
+    }
+</script>
+<%= stylesheet_link_tag 'sudoku', :media=> 'screen' %>
+
+<p id="notice"><%= notice %></p>
+<p>
+  <b>Puzzle Number:</b>
+  <%= @sudoku.id %>
+</p>
+<table cellspacing="0" cellpadding="0" id="sudoku">
+  <tbody><tr><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="0" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="1" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="2" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="3" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="4" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="5" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="6" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="7" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="8" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="9" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="10" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="11" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="12" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="13" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="14" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="15" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="16" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="17" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="18" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="19" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="20" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="21" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="22" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="23" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="24" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="25" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="26" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="27" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="28" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="29" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="30" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="31" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="32" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="33" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="34" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="35" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="36" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="37" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="38" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="39" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="40" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="41" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="42" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="43" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="44" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="45" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="46" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="47" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="48" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="49" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="50" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="51" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="52" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="53" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="54" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="55" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="56" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="57" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="58" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="59" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="60" style="text-align: center;margin:0;"></td><td style="border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="61" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1); border-top: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="62" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="63" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="64" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="65" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="66" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="67" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="68" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="69" style="text-align: center;margin:0;"></td><td><input type="text" class="sInput" id="70" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="71" style="text-align: center;margin:0;"></td></tr>
+  <tr><td style="border-left: 2px solid rgb(1,1,1); border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="72" style="text-align: center;margin:0;"></td><td style="border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="73" style="text-align: center;margin:0;"></td><td style="border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="74" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="75" style="text-align: center;margin:0;"></td><td style="border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="76" style="text-align: center;margin:0;"></td><td style="border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="77" style="text-align: center;margin:0;"></td><td style="border-left: 2px solid rgb(1,1,1); border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="78" style="text-align: center;margin:0;"></td><td style="border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="79" style="text-align: center;margin:0;"></td><td style="border-right: 2px solid rgb(1,1,1); border-bottom: 2px solid rgb(1,1,1);"><input type="text" class="sInput" id="80" style="text-align: center;margin:0;"></td></tr>
+
+  </tbody></table>
+<div id="buttonNav">
+<input id="logicButton" type="button" onclick="logicSolve()" value="Solve"/>
+<input id="validateButton" type="button" onclick="validatePuzzle()" value="Validate"/>
+<input id="clearButton" type="button" onclick="loadSample()" value="Clear"/>
+  </div>
+
+<p>
+  <b>Difficulty:</b>
+  <%= @sudoku.difficulty %>
+</p>
+
+<!--<%= link_to 'Edit', edit_sudoku_path(@sudoku) %> |       -->
+<%= link_to 'Back', sudokus_path %>

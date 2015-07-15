@@ -1,0 +1,45 @@
+.container{
+	width: 800px;
+	padding-left: 1em;
+    padding-top: 2em;
+}
+body {
+
+	background: #D8CAA1/*#B0A274;*/
+}
+header{
+	padding-top:20px;
+}
+section{
+	margin-top: 1em;
+	background: white;
+    padding-left: 20px; padding-top: 10px; padding-bottom: 20px;
+}
+a {
+	color: #4E6172;
+	text-decoration: none;
+}
+a:hover{
+	color: #19334A;
+	text-decoration: underline;
+}
+a:visited{
+	color: #19334A;
+	text-decoration: underline;
+}
+nav{
+	float:right;
+	background:white;
+	padding: 0 0.7em;
+	white-space:nowrap;
+}
+nav ul{
+	margin: 0;
+	padding: 0;
+}
+nav ul li{
+	list-style-type: none;
+	display: inline-block;
+	padding: 0.2em 0;
+	
+}
